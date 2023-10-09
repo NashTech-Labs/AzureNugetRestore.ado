@@ -1,0 +1,75 @@
+# do this before your build tasks
+
+parameters:
+- name: NugetGitHubSource
+  type: string
+  default: ''
+
+- name: restoreSolution     
+  type: string
+  default: '**/*.csproj'
+
+- name: nugetConfigPath
+  type: string
+  default: 'nuget.config'
+
+- name: externalFeedCredentials
+  type: string
+  default: '<your_service_connection>'
+
+- name: feedsToUse
+  type: string
+  default: 'select' 
+
+- name: vstsFeed
+  type: string
+  default: ''
+
+- name: noCache
+  type: boolean
+  default: false  
+
+- name: restoreDirectory
+  type: string
+  default: ''
+
+- name: disableParallelProcessing
+  type: boolean
+  default: false  
+
+- name: verbosityRestore
+  type: string
+  default: 'Detailed'   
+
+steps:
+- ${{ if eq( parameters.feedsToUse, 'select') }}:
+  - task: NuGetCommand@2
+    displayName: NuGet Restore with vstsFeed
+    inputs:
+      command: restore
+      restoreSolution: '${{ parameters.restoreSolution }}'    ## Required when command = restore. Path to your project's solution, packages.config, or project.json.
+      feedsToUse: '${{ parameters.feedsToUse }}'              ## Required. 'select' | 'config'. Default: select.
+      vstsFeed: '${{ parameters.vstsFeed }}'     
+      noCache: '${{ parameters.noCache }}'                    #noCache: false # boolean. Optional. Use when command = restore. Disable local cache. Default: false.
+      disableParallelProcessing: '${{ parameters.disableParallelProcessing }}'   #disableParallelProcessing: false # boolean. Optional. Use when command = restore. Disable parallel processing. Default: false.
+      restoreDirectory: '${{ parameters.restoreDirectory }}'  #restoreDirectory: # string. Alias: packagesDirectory. Optional. Use when command = restore. Destination directory. 
+      verbosityRestore: '${{ parameters.verbosityRestore }}'  #verbosityRestore: 'Detailed' # 'Quiet' | 'Normal' | 'Detailed'. Optional. Use when command = restore. Verbosity. Default: Detailed.
+
+- ${{ elseif eq( parameters.feedsToUse, 'config') }}:
+  - task: NuGetCommand@2
+    displayName: NuGet Add
+    inputs:
+      command: custom
+      arguments: 'sources add -Name "github"  -Source ${{ parameters.NugetGitHubSource }} -UserName $(GitHubUserName) -Password $(GitHubPAT) -ConfigFile nuget.config '
+  - task: NuGetCommand@2
+    displayName: NuGet Restore with nugetConfigPath
+    inputs:
+      command: restore
+      restoreSolution: '${{ parameters.restoreSolution }}'    ## Required when command = restore. Path to your project's solution, packages.config, or project.json.
+      feedsToUse: '${{ parameters.feedsToUse }}'              ## Required. 'select' | 'config'. Default: select.
+      nugetConfigPath: '${{ parameters.nugetConfigPath }}'    ## Required when selectOrConfig = config. Path to your nuget.config file.
+      externalFeedCredentials: '${{ parameters.externalFeedCredentials }}' #githubServiceCconnection
+      noCache: '${{ parameters.noCache }}'                    #noCache: false # boolean. Optional. Use when command = restore. Disable local cache. Default: false.
+      disableParallelProcessing: '${{ parameters.disableParallelProcessing }}'   #disableParallelProcessing: false # boolean. Optional. Use when command = restore. Disable parallel processing. Default: false.
+      restoreDirectory: '${{ parameters.restoreDirectory }}'  #restoreDirectory: # string. Alias: packagesDirectory. Optional. Use when command = restore. Destination directory. 
+      verbosityRestore: '${{ parameters.verbosityRestore }}'  #verbosityRestore: 'Detailed' # 'Quiet' | 'Normal' | 'Detailed'. Optional. Use when command = restore. Verbosity. Default: Detailed.
