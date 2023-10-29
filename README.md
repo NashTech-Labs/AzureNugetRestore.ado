@@ -62,9 +62,5 @@ You can directly call a particular template as per the requirement. for example:
       restoreDirectory: '${{ parameters.restoreDirectory }}'   
       verbosityRestore: '${{ parameters.verbosityRestore }}'
 
-        
-  
-Make sure to adjust the repository name, branch name, and parameter values according to your project's requirements.
-
   ```
-
+Make sure to adjust the repository name, branch name, and parameter values according to your project's requirements.
