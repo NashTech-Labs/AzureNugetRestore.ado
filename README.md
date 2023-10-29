@@ -21,3 +21,50 @@ Parameters:
 | disableParallelProcessing | ------------- | Boolean | False | true / false |  Optional | Use when command = restore. Disable parallel processing |
 | verbosityRestore | ------------- | String | Detailed |  |  Optional |  Specifies the amount of detail displayed in the output |
 
+These parameters provide multiple use case options for the dotnet templates, enable/disable flags for the utilization of different templates as per the requirements.
+
+## Use Cases
+
+You can directly call a particular template as per the requirement. for example: 
+
+  ```yaml
+  # azure-pipeline.yml
+  resources:
+  repositories:
+    - repository: Template
+      type: github
+      name: your_username/AzureNugetRestore.ado
+      ref: <respective branch name>
+      endpoint: 'githubServiceConnectioNname'
+
+  steps:
+  # passing the parameters
+- ${{ if eq( parameters.feedsToUse, 'select') }}:
+  - template: templates/Nuget_Restore.yaml
+    parameters: 
+      restoreSolution: '${{ parameters.restoreSolution }}'   
+      feedsToUse: '${{ parameters.feedsToUse }}'             
+      vstsFeed: '${{ parameters.vstsFeed }}'     
+      noCache: '${{ parameters.noCache }}'                   
+      disableParallelProcessing: '${{ parameters.disableParallelProcessing }}'  
+      restoreDirectory: '${{ parameters.restoreDirectory }}'   
+      verbosityRestore: '${{ parameters.verbosityRestore }}' 
+
+- ${{ elseif eq( parameters.feedsToUse, 'config') }}:
+  - template: templates/Nuget_Restore.yaml
+    parameters:
+      restoreSolution: '${{ parameters.restoreSolution }}'    
+      feedsToUse: '${{ parameters.feedsToUse }}'             
+      nugetConfigPath: '${{ parameters.nugetConfigPath }}'    
+      externalFeedCredentials: '${{ parameters.externalFeedCredentials }}' 
+      noCache: '${{ parameters.noCache }}'                   
+      disableParallelProcessing: '${{ parameters.disableParallelProcessing }}'  
+      restoreDirectory: '${{ parameters.restoreDirectory }}'   
+      verbosityRestore: '${{ parameters.verbosityRestore }}'
+
+        
+  
+Make sure to adjust the repository name, branch name, and parameter values according to your project's requirements.
+
+  ```
+
